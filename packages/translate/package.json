@@ -1,0 +1,24 @@
+{
+  "name": "@djs-tools/translate",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "files": [
+    "src",
+    "typings"
+  ],
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/akki0256/djs-tools.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/akki0256/djs-tools/issues"
+  },
+  "homepage": "https://github.com/akki0256/djs-tools#readme"
+}

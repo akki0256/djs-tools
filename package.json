@@ -1,0 +1,36 @@
+{
+  "name": "djs-tools",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "private": true,
+  "scripts": {
+    "test": "jest",
+    "lint": "eslint **/src/**/*.js --fix"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/akki0256/djs-tools.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/akki0256/djs-tools/issues"
+  },
+  "homepage": "https://github.com/akki0256/djs-tools#readme",
+  "workspaces": [
+    "packages/interactions",
+    "packages/pagination",
+    "packages/translate"
+  ],
+  "devDependencies": {
+    "eslint": "^8.0.1",
+    "eslint-config-standard": "^17.0.0",
+    "eslint-plugin-import": "^2.25.2",
+    "eslint-plugin-n": "^15.0.0",
+    "eslint-plugin-promise": "^6.0.0",
+    "jest": "^28.1.1",
+    "readme-gen": "^0.0.4"
+  }
+}

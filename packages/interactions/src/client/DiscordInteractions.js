@@ -1,0 +1,227 @@
+const fs = require('node:fs');
+const pathModule = require('node:path');
+const { EventEmitter } = require('node:stream');
+const MessageContext = require('../structures/MessageContext');
+const Command = require('../structures/Command');
+const UserContext = require('../structures/UserContext');
+const Button = require('../structures/Button');
+const SelectMenu = require('../structures/SelectMenu');
+const Modal = require('../structures/Modal');
+const { Collection, ApplicationCommandType } = require('discord.js');
+const BaseCommand = require('../structures/BaseCommand');
+
+class DiscordInteractions extends EventEmitter {
+	/**@type {Client} */
+	#client;
+	/** @type {Collection<String,Command>}*/
+	#commands;
+	/** @type {Collection<String,UserContext>}*/
+	#userContexts;
+	/** @type {Collection<String,MessageContext>}*/
+	#messageContexts;
+	/** @type {Collection<String,Button>}*/
+	#buttons;
+	/** @type {Collection<String,SelectMenu>}*/
+	#selectMenus;
+	/** @type {Collection<String,Modal>}*/
+	#modals;
+	/**
+	 * @param {Client} client discord client
+	 */
+	constructor(client) {
+		super();
+
+		this.#client = client;
+		this.#commands = new Collection();
+		this.#userContexts = new Collection();
+		this.#messageContexts = new Collection();
+		this.#buttons = new Collection();
+		this.#selectMenus = new Collection();
+		this.#modals = new Collection();
+	}
+
+	/**Loaded Slash command */
+	get commands() {
+		return this.#commands;
+	}
+
+	/**Loaded user context */
+	get userContexts() {
+		return this.#userContexts;
+	}
+
+	/**Loaded message context */
+	get messageContexts() {
+		return this.#messageContexts;
+	}
+	
+	/**Loaded button interaction */
+	get buttons() {
+		return this.#buttons;
+	}
+
+	/**Loaded selectMenu interaction */
+	get selectMenus() {
+		return this.#selectMenus;
+	}
+
+	/**Loaded modal interaction */
+	get modals() {
+		return this.#modals;
+	}
+
+	/**Loaded all interaction */
+	get interactions() {
+		return {
+			commands: this.commands,
+			userContexts: this.userContexts,
+			messageContexts: this.messageContexts,
+			buttons: this.buttons,
+			selectMenus: this.selectMenus,
+			modals: this.modals
+		};
+	}
+
+	/**
+	 * @param {string} path
+	 * @param {(value:fs.Dirent) => boolean} [predicate]
+	 * @param {Set<String>} [pre]
+	 * @returns {string[]}
+	 */
+	#getAllPath(path, predicate, pre = new Set()) {
+		if (typeof predicate !== 'function') predicate = (value) => !/^(-|_|\.)/.test(value.name);
+		if (!fs.existsSync(path)) return;
+		const dir = fs.readdirSync(path, { withFileTypes: true });
+		dir.forEach(v => {
+			if (v.isFile() && predicate(v)) return pre.add(pathModule.resolve(path, v.name));
+			if (v.isDirectory() && predicate(v)) this.#getAllPath(pathModule.resolve(path, v.name), predicate, pre);
+		});
+		return [...pre];
+	}
+
+	/**
+	 * Load an interaction file
+	 * @param {string} path Path of the directory where it is stored
+	 * @param {(value:fs.Dirent) => boolean} predicate If false, exclude the file
+	 */
+	loadInteractions(path, predicate) {
+		this.#getAllPath(path, predicate).forEach(InteractionPath => {
+			const interactionData = require(InteractionPath);
+			if (Array.isArray(interactionData)) {
+				interactionData.forEach(interaction => {
+					this.#loadInteraction(interaction.data, interaction.exec);
+				});
+			} else {
+				this.#loadInteraction(interactionData.data, interactionData.exec);
+			}
+		});
+		this.emit('interactionLoaded', this.interactions);
+	}
+
+	/**
+	 * @param {InteractionRegisterData} data
+	 * @param {InteractionRegisterCallback} exec
+	 */
+	#loadInteraction(data={}, exec) {
+		if (data.type === 'CHAT_INPUT') {
+			this.#commands.set(data.name, new Command({...data,type:ApplicationCommandType.ChatInput}, exec));
+		}
+		if (data.type === 'MESSAGE') {
+			this.#messageContexts.set(data.name, new MessageContext({...data,type:ApplicationCommandType.Message}, exec));
+		}
+		if (data.type === 'USER') {
+			this.#userContexts.set(data.name, new UserContext({...data,type:ApplicationCommandType.Message}, exec));
+		}
+		if (data.type === 'BUTTON') {
+			this.#buttons.set(data.customId, new Button(data, exec));
+		}
+		if (data.type === 'SELECT_MENU') {
+			this.#selectMenus.set(data.customId, new SelectMenu(data, exec));
+		}
+		if (data.type === 'MODAL') {
+			this.#modals.set(data.customId, new Modal(data, exec));
+		}
+	}
+
+	/**
+	 * Register the command in the discord
+	 * @param {Snowflake?} guildId Server ID to be registered
+	 */
+	async registerCommands(guildId) {
+		const command = await this.#client.application.commands.fetch();
+		this.commands.forEach(cmd => {
+			try {
+				if (command.some(v => v.name === cmd.data.name)) {
+					const findCmd = command.find(v => v.name === cmd.data.name && (guildId ? v.guildId === guildId : true));
+					findCmd.edit(cmd.data);
+					this.emit('commandEdit', cmd);
+				} else {
+					this.#client.application.commands.create(cmd.data, cmd.data.guildId ?? guildId);
+					this.emit('commandAdd', cmd);
+				}
+			} catch (err) {
+				this.emit('error', err);
+			}
+		});
+		this.userContexts.forEach(cmd => {
+			try {
+				if (command.some(v => v.name === cmd.data.name)) {
+					const findCmd = command.find(v => v.name === cmd.data.name && (guildId ? v.guildId === guildId : true));
+					findCmd.edit(cmd.data);
+					this.emit('userContextEdit', cmd);
+				} else {
+					this.#client.application.commands.create(cmd.data, cmd.data.guildId ?? guildId);
+					this.emit('userContextAdd', cmd);
+				}
+			} catch (err) {
+				this.emit('error', err);
+			}
+		});
+		this.messageContexts.forEach(cmd => {
+			try {
+				if (command.some(v => v.name === cmd.data.name)) {
+					const findCmd = command.find(v => v.name === cmd.data.name && (guildId ? v.guildId === guildId : true));
+					findCmd.edit(cmd.data);
+					this.emit('messageContextEdit', cmd);
+				} else {
+					this.#client.application.commands.create(cmd.data, cmd.data.guildId ?? guildId);
+					this.emit('messageContextAdd', cmd);
+				}
+			} catch (err) {
+				this.emit('error', err);
+			}
+		});
+	}
+
+	/**
+	 * Execute loaded interactions
+	 * @param {Interaction} interaction Arguments of the discord interactionCreate event
+	 * @param {any[]?} args Other arguments
+	 */
+	async run(interaction,...args) {
+		return new Promise((resolve,reject) => {
+			let select;
+			if (interaction.isChatInputCommand()) select = this.commands.get(interaction.commandName);
+			if (interaction.isUserContextMenuCommand()) select = this.userContexts.get(interaction.commandName);
+			if (interaction.isMessageContextMenuCommand()) select = this.messageContexts.get(interaction.commandName);
+			if (interaction.isButton()) select = this.buttons.get(interaction.customId);
+			if (interaction.isSelectMenu()) select = this.selectMenus.get(interaction.customId);
+			if (interaction.type === 5) select = this.modals.get(interaction.customId);
+			if(!select) {
+				reject({
+					message:'Not loaded interaction',
+					data:interaction
+				});
+			}
+			if(select instanceof BaseCommand && select.isInCoolTime(interaction.member)) {
+				reject({
+					message:'During the cooltime period',
+					data:select.timer.get(interaction.member)
+				});
+			}
+			resolve(select.run(interaction,...args));
+		});
+	}
+}
+
+module.exports = DiscordInteractions;
