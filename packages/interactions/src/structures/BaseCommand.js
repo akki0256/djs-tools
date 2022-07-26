@@ -6,7 +6,7 @@ class BaseCommand extends BaseInteraction {
 	#coolTime;
 	/**@type {Snowflake?} */
 	#guildId;
-	/**@type {Collection<GuildMember,Date>} */
+	/**@type {Collection<Snowflake,Date>} */
 	#timer;
 	constructor(data, callback) {
 		super(data, callback);
@@ -28,15 +28,21 @@ class BaseCommand extends BaseInteraction {
 		return this.#timer.clone();
 	}
 
-	isInCoolTime(member) {
-		if (!this.timer.has(member)) return false;
-		const lastTime = this.timer.get(member).getTime();
-		const nowTime = Date.now();
-		return !((lastTime + this.coolTime) <= nowTime);
+	getCoolTime(user) {
+		return this.timer.get(user.id) ?? null;
+	}
+
+	getLastUseDiff(user) {
+		const lastUse = this.getCoolTime(user) ?? 0;
+		return Date.now() - lastUse;
+	}
+
+	isInCoolTime(user) {
+		return this.getLastUseDiff(user) <= this.coolTime;
 	}
 
 	run(interaction) {
-		this.#timer.set(interaction.member, new Date());
+		this.#timer.set(interaction.user.id, new Date());
 		return this.callback(interaction);
 	}
 }

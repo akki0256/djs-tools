@@ -208,15 +208,16 @@ class DiscordInteractions extends EventEmitter {
 			if (interaction.isSelectMenu()) select = this.selectMenus.get(interaction.customId);
 			if (interaction.type === 5) select = this.modals.get(interaction.customId);
 			if(!select) {
-				reject({
+				return reject({
 					message:'Not loaded interaction',
-					data:interaction
+					code: 0x0
 				});
 			}
-			if(select instanceof BaseCommand && select.isInCoolTime(interaction.member)) {
-				reject({
+			if(select instanceof BaseCommand && select.isInCoolTime(interaction.user)) {
+				return reject({
 					message:'During the cooltime period',
-					data:select.timer.get(interaction.member)
+					code: 0x1,
+					data: select
 				});
 			}
 			resolve(select.run(interaction,...args));

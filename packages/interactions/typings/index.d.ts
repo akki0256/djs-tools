@@ -5,7 +5,6 @@ import {
 	Client,
 	Collection,
 	CommandInteraction,
-	GuildMember,
 	InteractionButtonComponentData,
 	MessageApplicationCommandData,
 	MessageContextMenuCommandInteraction,
@@ -15,7 +14,8 @@ import {
 	SelectMenuInteraction,
 	Snowflake,
 	UserApplicationCommandData,
-	UserContextMenuCommandInteraction
+	UserContextMenuCommandInteraction,
+	User
 } from 'discord.js';
 import fs from 'node:fs';
 import { EventEmitter } from 'node:stream';
@@ -23,13 +23,16 @@ import { EventEmitter } from 'node:stream';
 //#region Classes
 
 export class BaseCommand<T extends CommandInteractionType> extends BaseInteraction<T> {
-	#timer: Collection<GuildMember, Date>;
+	#guildId: Snowflake|null;
+	#timer: Collection<Snowflake, Date>;
 	#coolTime: number;
-	public IsInCoolTime(member: GuildMember): boolean;
+	public getCoolTime(user: User): Date | null;
+	public getLastUseDiff(user: User): number;
+	public IsInCoolTime(user: User): boolean;
 
 	get coolTime(): number;
 	get guildId(): Snowflake|null;
-	get timer(): Collection<GuildMember,Date>;
+	get timer(): Collection<Snowflake,Date>;
 }
 
 export class BaseComponent<T extends ComponentInteractionType> extends BaseInteraction<T> {
@@ -172,6 +175,13 @@ export interface Interactions {
 	modals: Collection<String, Modal>
 }
 
+export interface CommandData {
+	/**GuildId to register the command */
+	guildId?: Snowflake,
+	/**Time before the command can be reused */
+	coolTime?: number
+}
+
 export interface InteractionData {
 	'BUTTON': [
 		InteractionButtonComponentData,
@@ -182,15 +192,15 @@ export interface InteractionData {
 		SelectMenuInteraction
 	],
 	'CHAT_INPUT': [
-		Omit<ChatInputApplicationCommandData, 'type'> & { guildId?: Snowflake, coolTime?: number },
+		Omit<ChatInputApplicationCommandData, 'type'> & CommandData,
 		CommandInteraction
 	],
 	'MESSAGE': [
-		Omit<MessageApplicationCommandData, 'type'> & { guildId?: Snowflake, coolTime?: number },
+		Omit<MessageApplicationCommandData, 'type'> & CommandData,
 		MessageContextMenuCommandInteraction
 	],
 	'USER': [
-		Omit<UserApplicationCommandData, 'type'> & { guildId?: Snowflake, coolTime?: number },
+		Omit<UserApplicationCommandData, 'type'> & CommandData,
 		UserContextMenuCommandInteraction
 	],
 	'MODAL': [
