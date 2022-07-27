@@ -54,7 +54,7 @@ class DiscordInteractions extends EventEmitter {
 	get messageContexts() {
 		return this.#messageContexts;
 	}
-	
+
 	/**Loaded button interaction */
 	get buttons() {
 		return this.#buttons;
@@ -89,12 +89,12 @@ class DiscordInteractions extends EventEmitter {
 	 * @returns {string[]}
 	 */
 	#getAllPath(path, predicate, pre = new Set()) {
-		if (typeof predicate !== 'function') predicate = (value) => !/^(-|_|\.)/.test(value.name);
-		if (!fs.existsSync(path)) return;
+		if(typeof predicate !== 'function') predicate = (value) => !/^(-|_|\.)/.test(value.name);
+		if(!fs.existsSync(path)) return;
 		const dir = fs.readdirSync(path, { withFileTypes: true });
 		dir.forEach(v => {
-			if (v.isFile() && predicate(v)) return pre.add(pathModule.resolve(path, v.name));
-			if (v.isDirectory() && predicate(v)) this.#getAllPath(pathModule.resolve(path, v.name), predicate, pre);
+			if(v.isFile() && predicate(v)) return pre.add(pathModule.resolve(path, v.name));
+			if(v.isDirectory() && predicate(v)) this.#getAllPath(pathModule.resolve(path, v.name), predicate, pre);
 		});
 		return [...pre];
 	}
@@ -107,7 +107,7 @@ class DiscordInteractions extends EventEmitter {
 	loadInteractions(path, predicate) {
 		this.#getAllPath(path, predicate).forEach(InteractionPath => {
 			const interactionData = require(InteractionPath);
-			if (Array.isArray(interactionData)) {
+			if(Array.isArray(interactionData)) {
 				interactionData.forEach(interaction => {
 					this.#loadInteraction(interaction.data, interaction.exec);
 				});
@@ -122,23 +122,23 @@ class DiscordInteractions extends EventEmitter {
 	 * @param {InteractionRegisterData} data
 	 * @param {InteractionRegisterCallback} exec
 	 */
-	#loadInteraction(data={}, exec) {
-		if (data.type === 'CHAT_INPUT') {
-			this.#commands.set(data.name, new Command({...data,type:ApplicationCommandType.ChatInput}, exec));
+	#loadInteraction(data = {}, exec) {
+		if(data.type === 'CHAT_INPUT') {
+			this.#commands.set(data.name, new Command({ ...data, type: ApplicationCommandType.ChatInput }, exec));
 		}
-		if (data.type === 'MESSAGE') {
-			this.#messageContexts.set(data.name, new MessageContext({...data,type:ApplicationCommandType.Message}, exec));
+		if(data.type === 'MESSAGE') {
+			this.#messageContexts.set(data.name, new MessageContext({ ...data, type: ApplicationCommandType.Message }, exec));
 		}
-		if (data.type === 'USER') {
-			this.#userContexts.set(data.name, new UserContext({...data,type:ApplicationCommandType.Message}, exec));
+		if(data.type === 'USER') {
+			this.#userContexts.set(data.name, new UserContext({ ...data, type: ApplicationCommandType.User }, exec));
 		}
-		if (data.type === 'BUTTON') {
+		if(data.type === 'BUTTON') {
 			this.#buttons.set(data.customId, new Button(data, exec));
 		}
-		if (data.type === 'SELECT_MENU') {
+		if(data.type === 'SELECT_MENU') {
 			this.#selectMenus.set(data.customId, new SelectMenu(data, exec));
 		}
-		if (data.type === 'MODAL') {
+		if(data.type === 'MODAL') {
 			this.#modals.set(data.customId, new Modal(data, exec));
 		}
 	}
@@ -151,7 +151,7 @@ class DiscordInteractions extends EventEmitter {
 		const command = await this.#client.application.commands.fetch();
 		this.commands.forEach(cmd => {
 			try {
-				if (command.some(v => v.name === cmd.data.name)) {
+				if(command.some(v => v.name === cmd.data.name)) {
 					const findCmd = command.find(v => v.name === cmd.data.name && (guildId ? v.guildId === guildId : true));
 					findCmd.edit(cmd.data);
 					this.emit('commandEdit', cmd);
@@ -165,7 +165,7 @@ class DiscordInteractions extends EventEmitter {
 		});
 		this.userContexts.forEach(cmd => {
 			try {
-				if (command.some(v => v.name === cmd.data.name)) {
+				if(command.some(v => v.name === cmd.data.name)) {
 					const findCmd = command.find(v => v.name === cmd.data.name && (guildId ? v.guildId === guildId : true));
 					findCmd.edit(cmd.data);
 					this.emit('userContextEdit', cmd);
@@ -179,7 +179,7 @@ class DiscordInteractions extends EventEmitter {
 		});
 		this.messageContexts.forEach(cmd => {
 			try {
-				if (command.some(v => v.name === cmd.data.name)) {
+				if(command.some(v => v.name === cmd.data.name)) {
 					const findCmd = command.find(v => v.name === cmd.data.name && (guildId ? v.guildId === guildId : true));
 					findCmd.edit(cmd.data);
 					this.emit('messageContextEdit', cmd);
@@ -198,29 +198,29 @@ class DiscordInteractions extends EventEmitter {
 	 * @param {Interaction} interaction Arguments of the discord interactionCreate event
 	 * @param {any[]?} args Other arguments
 	 */
-	async run(interaction,...args) {
-		return new Promise((resolve,reject) => {
+	async run(interaction, ...args) {
+		return new Promise((resolve, reject) => {
 			let select;
-			if (interaction.isChatInputCommand()) select = this.commands.get(interaction.commandName);
-			if (interaction.isUserContextMenuCommand()) select = this.userContexts.get(interaction.commandName);
-			if (interaction.isMessageContextMenuCommand()) select = this.messageContexts.get(interaction.commandName);
-			if (interaction.isButton()) select = this.buttons.get(interaction.customId);
-			if (interaction.isSelectMenu()) select = this.selectMenus.get(interaction.customId);
-			if (interaction.type === 5) select = this.modals.get(interaction.customId);
+			if(interaction.isChatInputCommand()) select = this.commands.get(interaction.commandName);
+			if(interaction.isUserContextMenuCommand()) select = this.userContexts.get(interaction.commandName);
+			if(interaction.isMessageContextMenuCommand()) select = this.messageContexts.get(interaction.commandName);
+			if(interaction.isButton()) select = this.buttons.get(interaction.customId);
+			if(interaction.isSelectMenu()) select = this.selectMenus.get(interaction.customId);
+			if(interaction.type === 5) select = this.modals.get(interaction.customId);
 			if(!select) {
 				return reject({
-					message:'Not loaded interaction',
+					message: 'Not loaded interaction',
 					code: 0x0
 				});
 			}
 			if(select instanceof BaseCommand && select.isInCoolTime(interaction.user)) {
 				return reject({
-					message:'During the cooltime period',
+					message: 'During the cooltime period',
 					code: 0x1,
 					data: select
 				});
 			}
-			resolve(select.run(interaction,...args));
+			resolve(select.run(interaction, ...args));
 		});
 	}
 }

@@ -9,7 +9,7 @@ class BaseInteraction {
 	}
 
 	get data() {
-		return ({...this.#data});
+		return ({ ...this.#data });
 	}
 
 	get callback() {
