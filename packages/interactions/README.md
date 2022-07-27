@@ -5,11 +5,11 @@
 ## Installation
 - npm
 ```bash
-npm install 'https://gitpkg.now.sh/akki0256/djs-tools/packages/interactions?interactions-1.0.2'
+npm install 'https://gitpkg.now.sh/akki0256/djs-tools/packages/interactions?interactions-1.0.3'
 ```
 - yarn
 ```bash
-yarn add 'https://gitpkg.now.sh/akki0256/djs-tools/packages/interactions?interactions-1.0.2'
+yarn add 'https://gitpkg.now.sh/akki0256/djs-tools/packages/interactions?interactions-1.0.3'
 ```
 
 ## Usage
@@ -47,7 +47,7 @@ const ping_command = {
 	}
 }
 
-module.exports = [ping_command];
+module.exports = [ ping_command ];
 ```
 
 ## Contributing

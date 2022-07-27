@@ -184,11 +184,11 @@ export interface CommandData {
 
 export interface InteractionData {
 	'BUTTON': [
-		InteractionButtonComponentData,
+		Omit<InteractionButtonComponentData, 'type'>,
 		ButtonInteraction
 	],
 	'SELECT_MENU': [
-		SelectMenuComponentData,
+		Omit<SelectMenuComponentData, 'type'>,
 		SelectMenuInteraction
 	],
 	'CHAT_INPUT': [
@@ -204,7 +204,7 @@ export interface InteractionData {
 		UserContextMenuCommandInteraction
 	],
 	'MODAL': [
-		ModalComponentData,
+		Omit<ModalComponentData, 'type'>,
 		ModalSubmitInteraction
 	]
 }
