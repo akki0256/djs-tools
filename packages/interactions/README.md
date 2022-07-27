@@ -3,9 +3,13 @@
 > Module for easier handling of discord interaction
 
 ## Installation
-
+- npm
 ```bash
-npm install 'https://gitpkg.now.sh/akki0256/djs-tools/packages/interactions?interactions-1.0.2' 
+npm install 'https://gitpkg.now.sh/akki0256/djs-tools/packages/interactions?interactions-1.0.2'
+```
+- yarn
+```bash
+yarn add 'https://gitpkg.now.sh/akki0256/djs-tools/packages/interactions?interactions-1.0.2'
 ```
 
 ## Usage
