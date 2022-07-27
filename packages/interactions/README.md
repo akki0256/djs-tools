@@ -5,7 +5,7 @@
 ## Installation
 
 ```bash
-npm install 'https://gitpkg.now.sh/akki0256/djs-tools/packages/interactions?interactions-1.0.0' 
+npm install 'https://gitpkg.now.sh/akki0256/djs-tools/packages/interactions?interaction-1.0.1' 
 ```
 
 ## Usage
