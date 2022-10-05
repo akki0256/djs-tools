@@ -28,6 +28,10 @@ class BaseCommand extends BaseInteraction {
 		return this.#timer.clone();
 	}
 
+	resetCoolTime(user) {
+		this.#timer.set(user.id, null);
+	}
+
 	getCoolTime(user) {
 		return this.timer.get(user.id) ?? null;
 	}
@@ -41,9 +45,9 @@ class BaseCommand extends BaseInteraction {
 		return this.getLastUseDiff(user) <= this.coolTime;
 	}
 
-	run(interaction) {
+	run(interaction, ...args) {
 		this.#timer.set(interaction.user.id, new Date());
-		return this.callback(interaction);
+		return this.callback(interaction, ...args);
 	}
 }
 

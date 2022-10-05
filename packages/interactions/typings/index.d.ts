@@ -2,9 +2,9 @@ import {
 	Awaitable,
 	ButtonInteraction,
 	ChatInputApplicationCommandData,
+	ChatInputCommandInteraction,
 	Client,
 	Collection,
-	CommandInteraction,
 	InteractionButtonComponentData,
 	MessageApplicationCommandData,
 	MessageContextMenuCommandInteraction,
@@ -23,16 +23,17 @@ import { EventEmitter } from 'node:stream';
 //#region Classes
 
 export class BaseCommand<T extends CommandInteractionType> extends BaseInteraction<T> {
-	#guildId: Snowflake|null;
+	#guildId: Snowflake | null;
 	#timer: Collection<Snowflake, Date>;
 	#coolTime: number;
 	public getCoolTime(user: User): Date | null;
 	public getLastUseDiff(user: User): number;
 	public IsInCoolTime(user: User): boolean;
+	public resetCoolTime(user: User): void;
 
 	get coolTime(): number;
-	get guildId(): Snowflake|null;
-	get timer(): Collection<Snowflake,Date>;
+	get guildId(): Snowflake | null;
+	get timer(): Collection<Snowflake, Date>;
 }
 
 export class BaseComponent<T extends ComponentInteractionType> extends BaseInteraction<T> {
@@ -60,24 +61,24 @@ export class DiscordInteractions extends EventEmitter {
 	#modals: Interactions['modals'];
 	#interactions: Interactions;
 	private getAllPath(path: string, predicate?: (value: fs.Dirent) => boolean, pre?: Set<string>): string[];
-	private loadInteraction<T extends InteractionTypes>(data:InteractionRegisterData<T>,exec:InteractionRegisterCallback<T>): void;
+	private loadInteraction<T extends InteractionTypes>(data: InteractionRegisterData<T>, exec: InteractionRegisterCallback<T>): void;
 	/**
 	 * Load an interaction file
 	 * @param path Path of the directory where it is stored
 	 * @param predicate If false, exclude the file
 	 */
-	public loadInteractions(path: string, predicate?: (value: fs.Dirent) => boolean): void;	
+	public loadInteractions(path: string, predicate?: (value: fs.Dirent) => boolean): void;
 	/**
 	 * Register the command in the discord
 	 * @param guildId Server ID to be registered
 	 */
-	public registerCommands(guildId?:string): Promise<void>;
+	public registerCommands(guildId?: string): Promise<void>;
 	/**
 	 * Execute loaded interactions
 	 * @param interaction Arguments of the discord interactionCreate event
 	 * @param args Other arguments
 	 */
-	public run<T extends InteractionTypes>(interaction:InteractionData[T][1],...args:any[]): Promise<any>;
+	public run<T extends InteractionTypes>(interaction: InteractionData[T][1], ...args: any[]): Promise<any>;
 
 	/**Loaded Slash command */
 	get commands(): Interactions['commands'];
@@ -132,7 +133,7 @@ export class BaseInteraction<T extends InteractionTypes> {
 	public constructor(data: InteractionRegisterData<T>, callback: InteractionRegisterCallback<T>);
 	#data: InteractionRegisterData<T>;
 	#callback: InteractionRegisterCallback<T>;
-	public run(interaction: InteractionData[T][1],...args:any[]): any;
+	public run(interaction: InteractionData[T][1], ...args: any[]): any;
 
 	get data(): InteractionRegisterData<T>;
 	get callback(): InteractionRegisterCallback<T>;
@@ -185,27 +186,33 @@ export interface CommandData {
 export interface InteractionData {
 	'BUTTON': [
 		Omit<InteractionButtonComponentData, 'type'>,
-		ButtonInteraction
+		ButtonInteraction,
+		Button
 	],
 	'SELECT_MENU': [
 		Omit<SelectMenuComponentData, 'type'>,
-		SelectMenuInteraction
+		SelectMenuInteraction,
+		SelectMenu
 	],
 	'CHAT_INPUT': [
 		Omit<ChatInputApplicationCommandData, 'type'> & CommandData,
-		CommandInteraction
+		ChatInputCommandInteraction,
+		Command
 	],
 	'MESSAGE': [
 		Omit<MessageApplicationCommandData, 'type'> & CommandData,
-		MessageContextMenuCommandInteraction
+		MessageContextMenuCommandInteraction,
+		MessageContext
 	],
 	'USER': [
 		Omit<UserApplicationCommandData, 'type'> & CommandData,
-		UserContextMenuCommandInteraction
+		UserContextMenuCommandInteraction,
+		UserContext
 	],
 	'MODAL': [
 		Omit<ModalComponentData, 'type'>,
-		ModalSubmitInteraction
+		ModalSubmitInteraction,
+		Modal
 	]
 }
 
@@ -216,7 +223,7 @@ export type ContextInteractionType = Extract<CommandInteractionType, 'USER' | 'M
 export type ComponentInteractionType = Extract<InteractionTypes, 'BUTTON' | 'SELECT_MENU'>;
 
 export type InteractionRegisterData<T extends InteractionTypes> = InteractionData[T][0] & { type: T }
-export type InteractionRegisterCallback<T extends InteractionTypes> = (interaction: InteractionData[T][1]) => any;
+export type InteractionRegisterCallback<T extends InteractionTypes> = (interaction: InteractionData[T][1], data: InteractionData[T][2], args?: any[] ) => any;
 
 export interface InteractionRegister<T extends InteractionTypes> {
 	data: InteractionRegisterData<T>
