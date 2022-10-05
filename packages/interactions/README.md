@@ -5,11 +5,11 @@
 ## Installation
 - npm
 ```bash
-npm install 'https://gitpkg.now.sh/akki0256/djs-tools/packages/interactions?interactions-1.0.3'
+npm install 'https://gitpkg.now.sh/akki0256/djs-tools/packages/interactions?interactions-1.0.4'
 ```
 - yarn
 ```bash
-yarn add 'https://gitpkg.now.sh/akki0256/djs-tools/packages/interactions?interactions-1.0.3'
+yarn add 'https://gitpkg.now.sh/akki0256/djs-tools/packages/interactions?interactions-1.0.4'
 ```
 
 ## Usage
