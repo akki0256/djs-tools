@@ -2,6 +2,9 @@
 
 > Module for easier handling of discord interaction
 
+> **Warning**  
+> This repository has been moved [here](https://github.com/akki0256/discord-interaction)
+
 ## Installation
 - npm
 ```bash
